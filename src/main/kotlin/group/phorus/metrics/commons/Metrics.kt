@@ -39,7 +39,7 @@ fun MeterRegistry.logRequest(
     source: String,
     target: String,
     uri: String?,
-    increment: Double = 1.0,
+    increment: Int = 1,
 ) = Counter.builder("service.request")
     .tag("source", source)
     .tag("target", target)
@@ -47,13 +47,13 @@ fun MeterRegistry.logRequest(
         if (uri != null) tag("URI", uri)
     }
     .register(this)
-    .increment(increment)
+    .increment(increment.toDouble())
 
 fun MeterRegistry.logRequestRetry(
     source: String,
     target: String,
     uri: String?,
-    attempt: Double = 1.0,
+    attempt: Int = 1,
 ) = Counter.builder("service.request.retry")
     .tag("source", source)
     .tag("target", target)
@@ -69,7 +69,7 @@ fun MeterRegistry.logResponseStatus(
     target: String,
     uri: String?,
     status: Int,
-    increment: Double = 1.0
+    increment: Int = 1,
 ) = Counter.builder("service.response.status")
     .tag("source", source)
     .tag("target", target)
@@ -78,7 +78,7 @@ fun MeterRegistry.logResponseStatus(
     }
     .tag("statusCode", status.toString())
     .register(this)
-    .increment(increment)
+    .increment(increment.toDouble())
 
 fun MeterRegistry.logDuration(
     source: String,
