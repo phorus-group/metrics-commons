@@ -31,7 +31,7 @@ repositories {
 
 dependencies {
     // Kotlin
-    api("io.micrometer:micrometer-registry-prometheus:1.13.1")
+    api("io.micrometer:micrometer-registry-prometheus:1.13.2")
 
     // Test
     testImplementation(kotlin("test"))
