@@ -1,0 +1,174 @@
+name: PR Checks
+on:
+  workflow_dispatch:
+    inputs:
+      logLevel:
+        description: 'Log level'
+        required: true
+        default: 'warning'
+        type: choice
+        options:
+          - info
+          - warning
+          - debug
+  pull_request:
+    branches:
+      - main
+    types: [opened, edited, synchronize]
+
+permissions:
+  contents: read
+  actions: write
+
+jobs:
+  gradle-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@af1da67850ed9a4cedd57bfd976089dd991e2582 # v4.0.0
+
+      - name: Build with Gradle
+        run: ./gradlew build
+
+  gradle_publish:
+    runs-on: ubuntu-latest
+    needs: gradle-build
+    env:
+      MY_ENV_VAR: ${{ secrets.MY_SECRET }}
+      OSSRH_USER: ${{ secrets.OSSRH_USER }}
+      PUBLIC_PUBLISH_SIGNING_KEY: ${{ secrets.PUBLIC_PUBLISH_SIGNING_KEY }}
+      PUBLIC_PUBLISH_SIGNING_PASSWORD: ${{ secrets.PUBLIC_PUBLISH_SIGNING_PASSWORD }}
+
+    container:
+      image: ubuntu:22.04
+
+    steps:
+      - name: Install Java 17
+        run: |
+          apt-get update && apt-get install -y openjdk-17-jdk
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Run Gradle Publish
+        run: ./gradlew --build-cache publishToSonatype closeAndReleaseSonatypeStagingRepository
+
+
+
+
+  code_quality_custom:
+    runs-on: ubuntu-latest
+    env:
+      CODE_QUALITY_IMAGE_TAG: "0.96.0"
+      CI_TEMPLATE_REGISTRY_HOST: " "
+      CODE_QUALITY_IMAGE: "${{ env.CI_TEMPLATE_REGISTRY_HOST }}/gitlab-org/ci-cd/codequality:${{ env.CODE_QUALITY_IMAGE_TAG }}"
+      DOCKER_SOCKET_PATH: /var/run/docker.sock
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Run code quality analysis
+        run: |
+          echo -e "\033[34mTo disable job, set variable CODE_QUALITY_DISABLED=true\033[0m"
+          echo -e "\033[34mTo ignore the analysis, set the variable CODE_QUALITY_IGNORE=true\033[0m"
+          sudo apt-get update && sudo apt-get install -y jq
+  
+          docker run --rm \
+            --volume "${{ github.workspace }}":/code \
+            --volume "${{ env.DOCKER_SOCKET_PATH }}":/var/run/docker.sock \
+            "${{ env.CODE_QUALITY_IMAGE }}" /code
+  
+          BAD_SEVERITY=$(jq -rc 'map(.severity) | any((. == "major") or (. == "critical") or (. == "blocker"))' gl-code-quality-report.json)
+  
+          if [ "${{ env.CODE_QUALITY_IGNORE }}" == "true" ]; then
+            echo -e "\033[34mThe CODE_QUALITY_IGNORE variable has been set, the code quality analysis will ignore any problems\033[0m"
+          fi
+  
+          if [ "$BAD_SEVERITY" == "true" ] && [ "${{ env.CODE_QUALITY_IGNORE }}" != "true" ]; then
+            echo -e "\033[31mThe code quality analysis ended with an unacceptable severity, download the gl-code-quality-report.json report and fix any severity higher than 'info' and 'minor'\033[0m"
+            exit 1
+          else
+            echo -e "\033[32mThe code quality analysis ended up successfully\033[0m"
+          fi
+
+      - name: Upload Code Quality Report
+        uses: actions/upload-artifact@v3
+        with:
+          name: gl-code-quality-report.json
+          path: gl-code-quality-report.json
+          retention-days: 7
+
+  code_quality:
+    runs-on: ubuntu-latest
+    services:
+      docker:
+        image: 'docker:20.10.12-dind'
+        options: '--tls=false --host=tcp://0.0.0.0:2375'
+    env:
+      DOCKER_DRIVER: overlay2
+      DOCKER_CERT_PATH: ""
+      DOCKER_TLS_CERTDIR: ""
+      DOCKER_TLS_VERIFY: ""
+      CODE_QUALITY_IMAGE_TAG: "0.96.0"
+      CODE_QUALITY_IMAGE: "${{ env.CI_TEMPLATE_REGISTRY_HOST }}/gitlab-org/ci-cd/codequality:${{ env.CODE_QUALITY_IMAGE_TAG }}"
+      DOCKER_SOCKET_PATH: /var/run/docker.sock
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Log in to Docker Hub if credentials provided
+        if: env.CODECLIMATE_REGISTRY_USERNAME && env.CODECLIMATE_REGISTRY_PASSWORD && env.CODECLIMATE_PREFIX
+        run: |
+          CODECLIMATE_REGISTRY=${{ env.CODECLIMATE_PREFIX%%/* }}
+          echo "${{ env.CODECLIMATE_REGISTRY_PASSWORD }}" | docker login "${CODECLIMATE_REGISTRY}" --username "${{ env.CODECLIMATE_REGISTRY_USERNAME }}" --password-stdin
+
+      - name: Pull Code Quality Image
+        run: docker pull --quiet "${{ env.CODE_QUALITY_IMAGE }}"
+
+      - name: Run Code Quality Analysis
+        run: |
+          function propagate_env_vars() {
+            for VAR_NAME in "$@"; do
+              if [ -n "${!VAR_NAME}" ]; then
+                echo "--env $VAR_NAME=${!VAR_NAME} "
+              fi
+            done
+          }
+
+          docker run --rm \
+            $(propagate_env_vars \
+              SOURCE_CODE \
+              TIMEOUT_SECONDS \
+              CODECLIMATE_DEBUG \
+              CODECLIMATE_DEV \
+              REPORT_STDOUT \
+              REPORT_FORMAT \
+              ENGINE_MEMORY_LIMIT_BYTES \
+              CODECLIMATE_PREFIX \
+              CODECLIMATE_REGISTRY_USERNAME \
+              CODECLIMATE_REGISTRY_PASSWORD \
+              DOCKER_SOCKET_PATH \
+            ) \
+            --volume "${{ github.workspace }}":/code \
+            --volume "${{ env.DOCKER_SOCKET_PATH }}":/var/run/docker.sock \
+            "${{ env.CODE_QUALITY_IMAGE }}" /code
+
+      - name: Upload Code Quality Report
+        uses: actions/upload-artifact@v3
+        with:
+          name: gl-code-quality-report.json
+          path: gl-code-quality-report.json
+          retention-days: 7
