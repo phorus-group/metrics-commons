@@ -58,11 +58,14 @@ jobs:
       - name: Run Gradle Publish
         run: ./gradlew --build-cache publishToSonatype closeAndReleaseSonatypeStagingRepository
 
+
+
+
   code_quality_custom:
     runs-on: ubuntu-latest
     env:
       CODE_QUALITY_IMAGE_TAG: "0.96.0"
-      CI_TEMPLATE_REGISTRY_HOST: ${{}}
+      CI_TEMPLATE_REGISTRY_HOST: " "
       CODE_QUALITY_IMAGE: "${{ env.CI_TEMPLATE_REGISTRY_HOST }}/gitlab-org/ci-cd/codequality:${{ env.CODE_QUALITY_IMAGE_TAG }}"
       DOCKER_SOCKET_PATH: /var/run/docker.sock
 
