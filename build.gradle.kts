@@ -12,9 +12,6 @@ plugins {
     jacoco
 }
 
-ext["jackson-2-bom.version"] = "2.21.1"
-ext["jackson-bom.version"] = "3.1.0"
-
 group = "group.phorus"
 description = "Library with common functions for recording metrics."
 version = "2.0.0"
@@ -31,6 +28,9 @@ repositories {
 }
 
 dependencies {
+    // enforce version to fix GHSA-72hv-8253-57qq
+    api(platform("com.fasterxml.jackson:jackson-bom:2.21.1"))
+
     // Kotlin
     api("io.micrometer:micrometer-registry-prometheus:1.15.0")
     api("io.micrometer:micrometer-tracing:1.5.9")
