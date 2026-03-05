@@ -27,15 +27,16 @@ repositories {
     mavenLocal()
 }
 
-dependencies {
-    // enforce version to fix GHSA-72hv-8253-57qq
-    api(platform("com.fasterxml.jackson:jackson-bom:2.21.1"))
+configurations.all {
+    resolutionStrategy {
+        force("com.fasterxml.jackson.core:jackson-core:2.21.1")
+    }
+}
 
-    // Kotlin
+dependencies {
     api("io.micrometer:micrometer-registry-prometheus:1.15.0")
     api("io.micrometer:micrometer-tracing:1.5.9")
 
-    // Test
     testImplementation(kotlin("test"))
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.10.1")
     testImplementation("io.micrometer:micrometer-tracing-test:1.5.9")
