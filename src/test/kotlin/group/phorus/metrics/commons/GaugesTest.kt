@@ -18,8 +18,6 @@ class GaugesTest {
         registry = SimpleMeterRegistry()
     }
 
-    // ========== trackGauge (Number) ==========
-
     @Test
     fun `trackGauge with AtomicInteger reflects current value`() {
         val activeConnections = AtomicInteger(0)
@@ -54,8 +52,6 @@ class GaugesTest {
         assertEquals(42.0, gauge.value())
     }
 
-    // ========== trackGauge (valueFunction) ==========
-
     @Test
     fun `trackGauge with custom value function`() {
         val cache = mutableMapOf("a" to 1, "b" to 2, "c" to 3)
@@ -78,8 +74,6 @@ class GaugesTest {
         assertNotNull(gauge)
         assertEquals(8.0, gauge.value())
     }
-
-    // ========== trackCollectionSize ==========
 
     @Test
     fun `trackCollectionSize tracks list size`() {
@@ -115,8 +109,6 @@ class GaugesTest {
         items.removeAt(0)
         assertEquals(2.0, registry.find("app.buffer.size").gauge()!!.value())
     }
-
-    // ========== trackMapSize ==========
 
     @Test
     fun `trackMapSize tracks map size`() {

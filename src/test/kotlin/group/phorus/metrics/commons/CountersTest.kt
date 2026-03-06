@@ -180,9 +180,9 @@ class CountersTest {
 
     @Test
     fun `countStatus registers with status family and code`() {
-        registry.countStatus("http.response", 200)
+        registry.countStatus(MetricNames.HTTP_SERVER_REQUESTS, 200)
 
-        val counter = registry.find("http.response")
+        val counter = registry.find(MetricNames.HTTP_SERVER_REQUESTS)
             .tag("status_family", "2xx")
             .tag("status_code", "200")
             .counter()
@@ -192,12 +192,12 @@ class CountersTest {
 
     @Test
     fun `countStatus with extra tags`() {
-        registry.countStatus("http.response", 404, "endpoint" to "/api/users")
+        registry.countStatus(MetricNames.HTTP_SERVER_EXCEPTIONS, 404, "type" to "NotFound")
 
-        val counter = registry.find("http.response")
+        val counter = registry.find(MetricNames.HTTP_SERVER_EXCEPTIONS)
             .tag("status_family", "4xx")
             .tag("status_code", "404")
-            .tag("endpoint", "/api/users")
+            .tag("type", "NotFound")
             .counter()
         assertNotNull(counter)
         assertEquals(1.0, counter.count())
@@ -205,11 +205,11 @@ class CountersTest {
 
     @Test
     fun `countStatus groups different codes in same family as separate counters`() {
-        registry.countStatus("http.response", 200)
-        registry.countStatus("http.response", 201)
+        registry.countStatus(MetricNames.HTTP_SERVER_REQUESTS, 200)
+        registry.countStatus(MetricNames.HTTP_SERVER_REQUESTS, 201)
 
-        val counter200 = registry.find("http.response").tag("status_code", "200").counter()
-        val counter201 = registry.find("http.response").tag("status_code", "201").counter()
+        val counter200 = registry.find(MetricNames.HTTP_SERVER_REQUESTS).tag("status_code", "200").counter()
+        val counter201 = registry.find(MetricNames.HTTP_SERVER_REQUESTS).tag("status_code", "201").counter()
         assertNotNull(counter200)
         assertNotNull(counter201)
         assertEquals(1.0, counter200.count())

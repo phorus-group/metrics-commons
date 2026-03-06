@@ -20,8 +20,6 @@ class TimersTest {
         registry = SimpleMeterRegistry()
     }
 
-    // ========== timed ==========
-
     @Test
     fun `timed records successful execution`() {
         val result = registry.timed("app.operation", "action" to "process") {
@@ -117,8 +115,6 @@ class TimersTest {
         assertTrue(timer.totalTime(java.util.concurrent.TimeUnit.MILLISECONDS) > 0)
     }
 
-    // ========== timedSuspend ==========
-
     @Test
     fun `timedSuspend records successful execution`() = runTest {
         val result = registry.timedSuspend("app.async", "action" to "fetch") {
@@ -164,8 +160,6 @@ class TimersTest {
         assertNotNull(timer)
         assertEquals(1, timer.count())
     }
-
-    // ========== timedRequest ==========
 
     @Test
     fun `timedRequest records internal request`() {
@@ -249,8 +243,6 @@ class TimersTest {
         assertEquals(1, timer.count())
     }
 
-    // ========== timedRequestSuspend ==========
-
     @Test
     fun `timedRequestSuspend records request`() = runTest {
         val result = registry.timedRequestSuspend(
@@ -290,8 +282,6 @@ class TimersTest {
         assertNotNull(timer)
         assertEquals(1, timer.count())
     }
-
-    // ========== recordDuration ==========
 
     @Test
     fun `recordDuration records a pre-measured duration`() {

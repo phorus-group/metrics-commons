@@ -30,6 +30,7 @@ they reach production.
 - [Getting started](#getting-started)
   - [Installation](#installation)
   - [Tracing bridge setup](#tracing-bridge-setup)
+- [Standard metric names](#standard-metric-names)
 - [Metrics API](#metrics-api)
   - [Counters](#counters)
   - [Timers](#timers)
@@ -196,6 +197,53 @@ implementation("io.zipkin.reporter2:zipkin-reporter-brave")
 
 If no bridge is on the classpath, the `Tracer` returns no-op spans. All tracing functions still execute
 their blocks normally, with zero overhead.
+
+***
+
+## Standard metric names
+
+To ensure consistency across all services and libraries, use the constants defined in `MetricNames`
+instead of hardcoding metric names. This makes cross-service dashboards, queries, and alerts easier
+to build because all services use the same naming conventions.
+
+You can read more about the standard metric names in the [Micrometer documentation](https://micrometer.io/docs/concepts#_standard_metric_names).
+
+```kotlin
+import group.phorus.metrics.commons.MetricNames
+
+registry.countStatus(
+    name = MetricNames.HTTP_SERVER_EXCEPTIONS,
+    statusCode = 404,
+    "type" to "NotFound",
+)
+```
+
+**Available constants:**
+
+| Constant | Metric Name | Use Case |
+|----------|-------------|----------|
+| `HTTP_SERVER_REQUESTS` | `http.server.requests` | Server-side HTTP requests (Spring Boot Actuator standard) |
+| `HTTP_SERVER_EXCEPTIONS` | `http.server.exceptions` | Exceptions caught by exception handlers |
+| `HTTP_CLIENT_REQUESTS` | `http.client.requests` | Client-side HTTP requests (WebClient, RestTemplate) |
+| `HTTP_CLIENT_ERRORS` | `http.client.errors` | HTTP client errors before response received |
+| `DATABASE_QUERIES` | `database.queries` | Database query execution |
+| `DATABASE_CONNECTIONS` | `database.connections` | Connection pool state (active/idle/waiting) |
+| `DATABASE_TRANSACTIONS` | `database.transactions` | Transaction timing and outcome |
+| `CACHE_OPERATIONS` | `cache.operations` | Cache hits/misses/puts/evictions |
+| `CACHE_SIZE` | `cache.size` | Current cache size (gauge) |
+| `MESSAGE_PUBLISHED` | `message.published` | Messages published to queues/topics |
+| `MESSAGE_CONSUMED` | `message.consumed` | Messages consumed from queues |
+| `MESSAGE_PROCESSING` | `message.processing` | Message processing duration |
+| `AUTH_ATTEMPTS` | `auth.attempts` | Authentication attempts (login, token validation) |
+| `AUTH_CHECKS` | `auth.checks` | Authorization/permission checks |
+| `BUSINESS_EVENTS` | `business.events` | Domain-specific business events |
+| `BUSINESS_OPERATIONS` | `business.operations` | Business operation timing and outcome |
+| `EXTERNAL_SERVICE_CALLS` | `external.service.calls` | Calls to external services (third-party APIs) |
+| `EXTERNAL_SERVICE_ERRORS` | `external.service.errors` | External service call errors |
+| `FILE_OPERATIONS` | `file.operations` | File upload/download/delete |
+| `STORAGE_SIZE` | `storage.size` | Current storage usage (gauge) |
+
+See `MetricNames.kt` for the complete list with detailed KDoc comments on recommended tags for each metric.
 
 ***
 

@@ -15,8 +15,6 @@ class DistributionsTest {
         registry = SimpleMeterRegistry()
     }
 
-    // ========== recordValue ==========
-
     @Test
     fun `recordValue records a single value`() {
         registry.recordValue("app.loan_amount", 5000.0, "region" to "eu")
@@ -86,8 +84,6 @@ class DistributionsTest {
         assertEquals(150.0, summary.max())
     }
 
-    // ========== recordValueWithPercentiles ==========
-
     @Test
     fun `recordValueWithPercentiles records value`() {
         registry.recordValueWithPercentiles("app.response_size", 1024.0, "endpoint" to "/api")
@@ -123,8 +119,6 @@ class DistributionsTest {
         assertNotNull(summary)
         assertEquals(100, summary.count())
     }
-
-    // ========== recordValueWithBuckets ==========
 
     @Test
     fun `recordValueWithBuckets records value`() {

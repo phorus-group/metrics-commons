@@ -23,8 +23,6 @@ class TracingTest {
         registry = SimpleMeterRegistry()
     }
 
-    // ========== TRACED ==========
-
     @Test
     fun `traced creates span with name`() {
         val result = tracer.traced("app.operation") { 42 }
@@ -100,8 +98,6 @@ class TracingTest {
         assertEquals(2, spans.size)
     }
 
-    // ========== TRACED SUSPEND ==========
-
     @Test
     fun `tracedSuspend creates span with name`() = runTest {
         val result = tracer.tracedSuspend("app.async") { 99 }
@@ -144,8 +140,6 @@ class TracingTest {
         assertEquals(1, tracer.spans.size)
         assertEquals("app.async.delay", tracer.spans.first().name)
     }
-
-    // ========== TRACED REQUEST ==========
 
     @Test
     fun `tracedRequest creates span for internal request`() {
@@ -217,8 +211,6 @@ class TracingTest {
         assertEquals("service.request.external", span.name)
     }
 
-    // ========== TRACED REQUEST SUSPEND ==========
-
     @Test
     fun `tracedRequestSuspend creates span`() = runTest {
         val result = tracer.tracedRequestSuspend(
@@ -265,8 +257,6 @@ class TracingTest {
         assertEquals("service.request.internal", span.name)
         assertEquals("/api/send", span.tags["uri"])
     }
-
-    // ========== TAG SAFE / TAG BOUNDED ==========
 
     @Test
     fun `tagSafe sanitizes null to None`() {
@@ -337,8 +327,6 @@ class TracingTest {
         val span = tracer.spans.first()
         assertEquals("other", span.tags["method"])
     }
-
-    // ========== TRACED WITH METRICS ==========
 
     @Test
     fun `traced with registry records timer by default`() {
@@ -440,8 +428,6 @@ class TracingTest {
         assertEquals(1.0, counter.count())
     }
 
-    // ========== TRACED SUSPEND WITH METRICS ==========
-
     @Test
     fun `tracedSuspend with registry records timer`() = runTest {
         val result = tracer.tracedSuspend("db.query", "table" to "users", registry = registry) { 99 }
@@ -469,8 +455,6 @@ class TracingTest {
             .timer()
         assertNotNull(timer)
     }
-
-    // ========== TRACED REQUEST WITH METRICS ==========
 
     @Test
     fun `tracedRequest with registry records timer and counter by default`() {
@@ -598,8 +582,6 @@ class TracingTest {
             .timer()
         assertNotNull(timer)
     }
-
-    // ========== TRACED REQUEST SUSPEND WITH METRICS ==========
 
     @Test
     fun `tracedRequestSuspend with registry records timer and counter`() = runTest {
