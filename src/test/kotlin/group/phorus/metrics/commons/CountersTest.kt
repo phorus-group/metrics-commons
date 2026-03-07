@@ -5,6 +5,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
+import group.phorus.metrics.commons.TagNames as Tags
 
 class CountersTest {
 
@@ -17,31 +18,31 @@ class CountersTest {
 
     @Test
     fun `count increments counter by 1`() {
-        registry.count("app.events", "type" to "login")
+        registry.count("app.events", Tags.TYPE to "login")
 
-        val counter = registry.find("app.events").tag("type", "login").counter()
+        val counter = registry.find("app.events").tag(Tags.TYPE, "login").counter()
         assertNotNull(counter)
         assertEquals(1.0, counter.count())
     }
 
     @Test
     fun `count accumulates multiple calls`() {
-        registry.count("app.events", "type" to "login")
-        registry.count("app.events", "type" to "login")
-        registry.count("app.events", "type" to "login")
+        registry.count("app.events", Tags.TYPE to "login")
+        registry.count("app.events", Tags.TYPE to "login")
+        registry.count("app.events", Tags.TYPE to "login")
 
-        val counter = registry.find("app.events").tag("type", "login").counter()
+        val counter = registry.find("app.events").tag(Tags.TYPE, "login").counter()
         assertNotNull(counter)
         assertEquals(3.0, counter.count())
     }
 
     @Test
     fun `count with multiple tags`() {
-        registry.count("app.events", "type" to "login", "region" to "eu")
+        registry.count("app.events", Tags.TYPE to "login", Tags.REGION to "eu")
 
         val counter = registry.find("app.events")
-            .tag("type", "login")
-            .tag("region", "eu")
+            .tag(Tags.TYPE, "login")
+            .tag(Tags.REGION, "eu")
             .counter()
         assertNotNull(counter)
         assertEquals(1.0, counter.count())
@@ -58,11 +59,11 @@ class CountersTest {
 
     @Test
     fun `count separates different tag values`() {
-        registry.count("app.events", "type" to "login")
-        registry.count("app.events", "type" to "logout")
+        registry.count("app.events", Tags.TYPE to "login")
+        registry.count("app.events", Tags.TYPE to "logout")
 
-        val loginCounter = registry.find("app.events").tag("type", "login").counter()
-        val logoutCounter = registry.find("app.events").tag("type", "logout").counter()
+        val loginCounter = registry.find("app.events").tag(Tags.TYPE, "login").counter()
+        val logoutCounter = registry.find("app.events").tag(Tags.TYPE, "logout").counter()
         assertNotNull(loginCounter)
         assertNotNull(logoutCounter)
         assertEquals(1.0, loginCounter.count())
@@ -71,19 +72,19 @@ class CountersTest {
 
     @Test
     fun `countBy increments by custom amount`() {
-        registry.countBy("app.bytes", 1024.0, "direction" to "inbound")
+        registry.countBy("app.bytes", 1024.0, Tags.DIRECTION to "inbound")
 
-        val counter = registry.find("app.bytes").tag("direction", "inbound").counter()
+        val counter = registry.find("app.bytes").tag(Tags.DIRECTION, "inbound").counter()
         assertNotNull(counter)
         assertEquals(1024.0, counter.count())
     }
 
     @Test
     fun `countBy accumulates`() {
-        registry.countBy("app.bytes", 512.0, "direction" to "inbound")
-        registry.countBy("app.bytes", 256.0, "direction" to "inbound")
+        registry.countBy("app.bytes", 512.0, Tags.DIRECTION to "inbound")
+        registry.countBy("app.bytes", 256.0, Tags.DIRECTION to "inbound")
 
-        val counter = registry.find("app.bytes").tag("direction", "inbound").counter()
+        val counter = registry.find("app.bytes").tag(Tags.DIRECTION, "inbound").counter()
         assertNotNull(counter)
         assertEquals(768.0, counter.count())
     }
@@ -97,9 +98,9 @@ class CountersTest {
         )
 
         val counter = registry.find("service.request")
-            .tag("source", "user-service")
-            .tag("target", "auth-service")
-            .tag("type", "internal")
+            .tag(Tags.SOURCE, "user-service")
+            .tag(Tags.TARGET, "auth-service")
+            .tag(Tags.TYPE, "internal")
             .counter()
         assertNotNull(counter)
         assertEquals(1.0, counter.count())
@@ -114,9 +115,9 @@ class CountersTest {
         )
 
         val counter = registry.find("service.request")
-            .tag("source", "user-service")
-            .tag("target", "stripe-api")
-            .tag("type", "external")
+            .tag(Tags.SOURCE, "user-service")
+            .tag(Tags.TARGET, "stripe-api")
+            .tag(Tags.TYPE, "external")
             .counter()
         assertNotNull(counter)
         assertEquals(1.0, counter.count())
@@ -132,10 +133,10 @@ class CountersTest {
         )
 
         val counter = registry.find("service.request")
-            .tag("source", "gateway")
-            .tag("target", "user-service")
-            .tag("type", "internal")
-            .tag("uri", "/api/users")
+            .tag(Tags.SOURCE, "gateway")
+            .tag(Tags.TARGET, "user-service")
+            .tag(Tags.TYPE, "internal")
+            .tag(Tags.URI, "/api/users")
             .counter()
         assertNotNull(counter)
         assertEquals(1.0, counter.count())
@@ -151,10 +152,10 @@ class CountersTest {
         )
 
         val counter = registry.find("service.request.retry")
-            .tag("source", "user-service")
-            .tag("target", "email-service")
-            .tag("type", "internal")
-            .tag("attempt", "2")
+            .tag(Tags.SOURCE, "user-service")
+            .tag(Tags.TARGET, "email-service")
+            .tag(Tags.TYPE, "internal")
+            .tag(Tags.ATTEMPT, "2")
             .counter()
         assertNotNull(counter)
         assertEquals(1.0, counter.count())
@@ -171,8 +172,8 @@ class CountersTest {
         )
 
         val counter = registry.find("service.request.retry")
-            .tag("uri", "/api/users")
-            .tag("attempt", "3")
+            .tag(Tags.URI, "/api/users")
+            .tag(Tags.ATTEMPT, "3")
             .counter()
         assertNotNull(counter)
         assertEquals(1.0, counter.count())
@@ -183,8 +184,8 @@ class CountersTest {
         registry.countStatus(MetricNames.HTTP_SERVER_REQUESTS, 200)
 
         val counter = registry.find(MetricNames.HTTP_SERVER_REQUESTS)
-            .tag("status_family", "2xx")
-            .tag("status_code", "200")
+            .tag(Tags.STATUS_FAMILY, "2xx")
+            .tag(Tags.STATUS_CODE, "200")
             .counter()
         assertNotNull(counter)
         assertEquals(1.0, counter.count())
@@ -192,12 +193,12 @@ class CountersTest {
 
     @Test
     fun `countStatus with extra tags`() {
-        registry.countStatus(MetricNames.HTTP_SERVER_EXCEPTIONS, 404, "type" to "NotFound")
+        registry.countStatus(MetricNames.HTTP_SERVER_EXCEPTIONS, 404, Tags.TYPE to "NotFound")
 
         val counter = registry.find(MetricNames.HTTP_SERVER_EXCEPTIONS)
-            .tag("status_family", "4xx")
-            .tag("status_code", "404")
-            .tag("type", "NotFound")
+            .tag(Tags.STATUS_FAMILY, "4xx")
+            .tag(Tags.STATUS_CODE, "404")
+            .tag(Tags.TYPE, "NotFound")
             .counter()
         assertNotNull(counter)
         assertEquals(1.0, counter.count())
@@ -208,8 +209,8 @@ class CountersTest {
         registry.countStatus(MetricNames.HTTP_SERVER_REQUESTS, 200)
         registry.countStatus(MetricNames.HTTP_SERVER_REQUESTS, 201)
 
-        val counter200 = registry.find(MetricNames.HTTP_SERVER_REQUESTS).tag("status_code", "200").counter()
-        val counter201 = registry.find(MetricNames.HTTP_SERVER_REQUESTS).tag("status_code", "201").counter()
+        val counter200 = registry.find(MetricNames.HTTP_SERVER_REQUESTS).tag(Tags.STATUS_CODE, "200").counter()
+        val counter201 = registry.find(MetricNames.HTTP_SERVER_REQUESTS).tag(Tags.STATUS_CODE, "201").counter()
         assertNotNull(counter200)
         assertNotNull(counter201)
         assertEquals(1.0, counter200.count())

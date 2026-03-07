@@ -3,11 +3,11 @@
  *
  * These functions wrap the [Timer.start][io.micrometer.core.instrument.Timer.start] /
  * [Timer.Sample.stop][io.micrometer.core.instrument.Timer.Sample.stop] pattern into single
- * higher-order function calls. Each function automatically adds an `exception` tag:
+ * higher-order function calls. Each function automatically adds an [TagNames.EXCEPTION] tag:
  * `"None"` on success, or the simple class name on failure. This tag is always present so that
  * Prometheus queries don't need to handle its absence.
  *
- * The `exception` tag uses the simple class name (e.g. `"IllegalStateException"`) rather than the
+ * The [TagNames.EXCEPTION] tag uses the simple class name (e.g. `"IllegalStateException"`) rather than the
  * fully qualified name or the message string. This keeps cardinality bounded to the finite set of
  * exception types your code can throw, instead of growing with every unique message.
  *
@@ -24,11 +24,11 @@ import java.time.Duration
 /**
  * Times a synchronous [block] and records it as a [Timer] metric.
  *
- * On success the timer is tagged with `exception=None`; on failure it is tagged with the exception's
+ * On success the timer is tagged with [TagNames.EXCEPTION]=None; on failure it is tagged with the exception's
  * simple class name. The original exception is always re-thrown.
  *
  * ```
- * val user = registry.timed("db.query", "table" to "users") {
+ * val user = registry.timed("db.query", TagNames.TABLE to "users") {
  *     userRepository.findById(id)
  * }
  * ```
@@ -57,7 +57,7 @@ inline fun <R> MeterRegistry.timed(
                 Timer.builder(name)
                     .serviceLevelObjectives(*slos)
                     .tags(*tagArray)
-                    .tag("exception", "None")
+                    .tag(TagNames.EXCEPTION, "None")
                     .register(this)
             )
         }
@@ -66,7 +66,7 @@ inline fun <R> MeterRegistry.timed(
             Timer.builder(name)
                 .serviceLevelObjectives(*slos)
                 .tags(*tagArray)
-                .tag("exception", e.javaClass.simpleName)
+                .tag(TagNames.EXCEPTION, e.javaClass.simpleName)
                 .register(this)
         )
         throw e
@@ -80,7 +80,7 @@ inline fun <R> MeterRegistry.timed(
  * inside coroutines.
  *
  * ```
- * val user = registry.timedSuspend("db.query", "table" to "users") {
+ * val user = registry.timedSuspend("db.query", TagNames.TABLE to "users") {
  *     userRepository.findByIdSuspend(id)
  * }
  * ```
@@ -109,7 +109,7 @@ suspend inline fun <R> MeterRegistry.timedSuspend(
                 Timer.builder(name)
                     .serviceLevelObjectives(*slos)
                     .tags(*tagArray)
-                    .tag("exception", "None")
+                    .tag(TagNames.EXCEPTION, "None")
                     .register(this)
             )
         }
@@ -118,7 +118,7 @@ suspend inline fun <R> MeterRegistry.timedSuspend(
             Timer.builder(name)
                 .serviceLevelObjectives(*slos)
                 .tags(*tagArray)
-                .tag("exception", e.javaClass.simpleName)
+                .tag(TagNames.EXCEPTION, e.javaClass.simpleName)
                 .register(this)
         )
         throw e
@@ -129,7 +129,7 @@ suspend inline fun <R> MeterRegistry.timedSuspend(
  * Times a synchronous service-to-service request and records it under
  * `service.request.internal` or `service.request.external` depending on [type].
  *
- * Produces the tags: `source`, `target`, optionally `uri`, and `exception`.
+ * Produces the tags: [TagNames.SOURCE], [TagNames.TARGET], optionally [TagNames.URI], and [TagNames.EXCEPTION].
  * This is the timed counterpart of [countRequest]. Use it when you need both the request count
  * and the latency distribution in a single call.
  *
@@ -168,14 +168,14 @@ inline fun <R> MeterRegistry.timedRequest(
         block().also {
             sample.stop(
                 requestTimerBuilder("service.request.${type.value}", source, target, uri, slos)
-                    .tag("exception", "None")
+                    .tag(TagNames.EXCEPTION, "None")
                     .register(this)
             )
         }
     } catch (e: Exception) {
         sample.stop(
             requestTimerBuilder("service.request.${type.value}", source, target, uri, slos)
-                .tag("exception", e.javaClass.simpleName)
+                .tag(TagNames.EXCEPTION, e.javaClass.simpleName)
                 .register(this)
         )
         throw e
@@ -212,14 +212,14 @@ suspend inline fun <R> MeterRegistry.timedRequestSuspend(
         block().also {
             sample.stop(
                 requestTimerBuilder("service.request.${type.value}", source, target, uri, slos)
-                    .tag("exception", "None")
+                    .tag(TagNames.EXCEPTION, "None")
                     .register(this)
             )
         }
     } catch (e: Exception) {
         sample.stop(
             requestTimerBuilder("service.request.${type.value}", source, target, uri, slos)
-                .tag("exception", e.javaClass.simpleName)
+                .tag(TagNames.EXCEPTION, e.javaClass.simpleName)
                 .register(this)
         )
         throw e
@@ -235,7 +235,7 @@ suspend inline fun <R> MeterRegistry.timedRequestSuspend(
  *
  * ```
  * val elapsed = Duration.between(start, Instant.now())
- * registry.recordDuration("http.client.duration", elapsed, "target" to "stripe")
+ * registry.recordDuration("http.client.duration", elapsed, TagNames.TARGET to "stripe")
  * ```
  *
  * @param name the metric name.
@@ -257,7 +257,7 @@ fun MeterRegistry.recordDuration(
 }
 
 /**
- * Builds a [Timer.Builder] with the standard request tags (`source`, `target`, optionally `uri`).
+ * Builds a [Timer.Builder] with the standard request tags ([TagNames.SOURCE], [TagNames.TARGET], optionally [TagNames.URI]).
  *
  * Shared by [timedRequest] and [timedRequestSuspend] to avoid duplicating the builder setup.
  */
@@ -270,6 +270,6 @@ internal fun requestTimerBuilder(
     slos: Array<Duration>,
 ): Timer.Builder = Timer.builder(name)
     .serviceLevelObjectives(*slos)
-    .tag("source", source)
-    .tag("target", target)
-    .apply { if (uri != null) tag("uri", uri) }
+    .tag(TagNames.SOURCE, source)
+    .tag(TagNames.TARGET, target)
+    .apply { if (uri != null) tag(TagNames.URI, uri) }

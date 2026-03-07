@@ -22,7 +22,7 @@ import io.micrometer.core.instrument.MeterRegistry
  * or [recordValueWithBuckets] when you need richer histogram data.
  *
  * ```
- * registry.recordValue("app.loan_amount", 15000.0, "region" to "eu")
+ * registry.recordValue("app.loan_amount", 15000.0, TagNames.REGION to "eu")
  * ```
  *
  * @param name the metric name.
@@ -78,7 +78,7 @@ fun MeterRegistry.recordValueWithPercentiles(
  * registry.recordValueWithBuckets(
  *     "app.file_size",
  *     payload.length.toDouble(),
- *     "type" to "upload",
+ *     TagNames.TYPE to "upload",
  *     buckets = doubleArrayOf(1024.0, 10_240.0, 102_400.0, 1_048_576.0),
  * )
  * ```

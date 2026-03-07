@@ -20,7 +20,7 @@ import io.micrometer.core.instrument.MeterRegistry
  * with pre-defined tag structure, see [countRequest] and [countRetry].
  *
  * ```
- * registry.count("app.events", "type" to "login", "region" to "eu")
+ * registry.count("app.events", TagNames.TYPE to "login", TagNames.REGION to "eu")
  * ```
  *
  * @param name the metric name.
@@ -43,7 +43,7 @@ fun MeterRegistry.count(
  * items processed in a batch).
  *
  * ```
- * registry.countBy("app.bytes.transferred", 4096.0, "direction" to "inbound")
+ * registry.countBy("app.bytes.transferred", 4096.0, TagNames.DIRECTION to "inbound")
  * ```
  *
  * @param name the metric name.
@@ -64,7 +64,7 @@ fun MeterRegistry.countBy(
 /**
  * Records a service-to-service request under the `service.request` metric.
  *
- * Produces the tags: `source`, `target`, `type` ([RequestType.value]), and optionally `uri`.
+ * Produces the tags: [TagNames.SOURCE], [TagNames.TARGET], [TagNames.TYPE] ([RequestType.value]), and optionally [TagNames.URI].
  * This gives a consistent tag schema across all services for request counting.
  *
  * For the timed equivalent that also records latency and exception tags, see
@@ -83,10 +83,10 @@ fun MeterRegistry.countRequest(
     uri: String? = null,
 ) {
     Counter.builder("service.request")
-        .tag("source", source)
-        .tag("target", target)
-        .tag("type", type.value)
-        .apply { if (uri != null) tag("uri", uri) }
+        .tag(TagNames.SOURCE, source)
+        .tag(TagNames.TARGET, target)
+        .tag(TagNames.TYPE, type.value)
+        .apply { if (uri != null) tag(TagNames.URI, uri) }
         .register(this)
         .increment()
 }
@@ -111,11 +111,11 @@ fun MeterRegistry.countRetry(
     uri: String? = null,
 ) {
     Counter.builder("service.request.retry")
-        .tag("source", source)
-        .tag("target", target)
-        .tag("type", type.value)
-        .tag("attempt", attempt.toString())
-        .apply { if (uri != null) tag("uri", uri) }
+        .tag(TagNames.SOURCE, source)
+        .tag(TagNames.TARGET, target)
+        .tag(TagNames.TYPE, type.value)
+        .tag(TagNames.ATTEMPT, attempt.toString())
+        .apply { if (uri != null) tag(TagNames.URI, uri) }
         .register(this)
         .increment()
 }
@@ -123,14 +123,14 @@ fun MeterRegistry.countRetry(
 /**
  * Records an HTTP status code occurrence with both family and code tags.
  *
- * Tags produced: `status_family` (e.g. `"2xx"`) and `status_code` (e.g. `"200"`). The family tag
+ * Tags produced: [TagNames.STATUS_FAMILY] (e.g. `"2xx"`) and [TagNames.STATUS_CODE] (e.g. `"200"`). The family tag
  * keeps aggregation queries fast and bounded, while the code tag allows drill-down when needed.
  * Additional tags can be appended via [tags].
  *
  * The family is computed by [statusFamily].
  *
  * ```
- * registry.countStatus("http.server.responses", 404, "method" to "GET")
+ * registry.countStatus("http.server.responses", 404, TagNames.METHOD to "GET")
  * ```
  *
  * @param name the metric name.
@@ -143,8 +143,8 @@ fun MeterRegistry.countStatus(
     vararg tags: Pair<String, String>,
 ) {
     Counter.builder(name)
-        .tag("status_family", statusFamily(statusCode))
-        .tag("status_code", statusCode.toString())
+        .tag(TagNames.STATUS_FAMILY, statusFamily(statusCode))
+        .tag(TagNames.STATUS_CODE, statusCode.toString())
         .tags(*tags.toTagArray())
         .register(this)
         .increment()

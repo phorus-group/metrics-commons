@@ -31,6 +31,7 @@ they reach production.
   - [Installation](#installation)
   - [Tracing bridge setup](#tracing-bridge-setup)
 - [Standard metric names](#standard-metric-names)
+- [Standard tag names](#standard-tag-names)
 - [Metrics API](#metrics-api)
   - [Counters](#counters)
   - [Timers](#timers)
@@ -244,6 +245,46 @@ registry.countStatus(
 | `STORAGE_SIZE` | `storage.size` | Current storage usage (gauge) |
 
 See `MetricNames.kt` for the complete list with detailed KDoc comments on recommended tags for each metric.
+
+***
+
+## Standard tag names
+
+To ensure consistent tag naming across all services, use the constants defined in `TagNames`
+instead of hardcoding tag names.
+
+```kotlin
+import group.phorus.metrics.commons.TagNames
+
+registry.count(
+    MetricNames.HTTP_SERVER_REQUESTS,
+    TagNames.METHOD to "GET",
+    TagNames.STATUS_CODE to "200",
+)
+```
+
+**Commonly used tag names:**
+
+| Category | Tag Constant | Tag Name | Example Values |
+|----------|--------------|----------|----------------|
+| **HTTP** | `METHOD` | `method` | `"GET"`, `"POST"`, `"PUT"` |
+| | `STATUS_CODE` | `status_code` | `"200"`, `"404"`, `"500"` |
+| | `STATUS_FAMILY` | `status_family` | `"2xx"`, `"4xx"`, `"5xx"` |
+| | `URI` | `uri` | `"/api/users"`, `"/health"` |
+| **Services** | `SOURCE` | `source` | `"user-service"`, `"gateway"` |
+| | `TARGET` | `target` | `"auth-service"`, `"stripe-api"` |
+| | `TYPE` | `type` | `"internal"`, `"external"` |
+| **Errors** | `EXCEPTION` | `exception` | `"NullPointerException"`, `"NotFound"` |
+| | `ERROR_CODE` | `error_code` | `"VALIDATION_ERROR"`, `"TIMEOUT"` |
+| **Database** | `TABLE` | `table` | `"users"`, `"orders"` |
+| | `OPERATION` | `operation` | `"SELECT"`, `"INSERT"`, `"UPDATE"` |
+| **Cache** | `CACHE_OPERATION` | `cache_operation` | `"hit"`, `"miss"`, `"put"` |
+| | `CACHE_NAME` | `cache_name` | `"user_cache"`, `"session_cache"` |
+| **General** | `REGION` | `region` | `"us-east-1"`, `"eu-central-1"` |
+| | `OUTCOME` | `outcome` | `"success"`, `"failure"`, `"timeout"` |
+| | `DIRECTION` | `direction` | `"inbound"`, `"outbound"` |
+
+See `TagNames.kt` for the complete list of 30+ standardized tag names.
 
 ***
 

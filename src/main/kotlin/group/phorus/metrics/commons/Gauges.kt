@@ -91,7 +91,7 @@ fun <T> MeterRegistry.trackGauge(
  * private val pendingTasks = registry.trackCollectionSize(
  *     "app.tasks.pending",
  *     CopyOnWriteArrayList(),
- *     "queue" to "default",
+ *     TagNames.QUEUE to "default",
  * )
  * ```
  *

@@ -58,7 +58,7 @@ import java.time.Duration
  * entire duration. For suspend functions, use [tracedSuspend] instead.
  *
  * ```
- * val user = tracer.traced("db.query", "table" to "users") { span ->
+ * val user = tracer.traced("db.query", TagNames.TABLE to "users") { span ->
  *     val result = userRepository.findById(id)
  *     span.event("query complete")
  *     result
@@ -69,7 +69,7 @@ import java.time.Duration
  * metrics for the same operation without nesting:
  *
  * ```
- * val user = tracer.traced("db.query", "table" to "users",
+ * val user = tracer.traced("db.query", TagNames.TABLE to "users",
  *     registry = registry,
  *     metrics = { timed() },
  * ) { span ->
@@ -110,7 +110,7 @@ inline fun <R> Tracer.traced(
             Timer.builder(name)
                 .serviceLevelObjectives(*config!!.slos)
                 .tags(*tagArray)
-                .tag("exception", "None")
+                .tag(TagNames.EXCEPTION, "None")
                 .register(config.registry)
         )
         result
@@ -120,7 +120,7 @@ inline fun <R> Tracer.traced(
             Timer.builder(name)
                 .serviceLevelObjectives(*config!!.slos)
                 .tags(*tagArray)
-                .tag("exception", e.javaClass.simpleName)
+                .tag(TagNames.EXCEPTION, e.javaClass.simpleName)
                 .register(config.registry)
         )
         throw e
@@ -143,7 +143,7 @@ inline fun <R> Tracer.traced(
  * The [Span] is passed to the block so you can add tags or events mid-execution:
  *
  * ```
- * val user = tracer.tracedSuspend("db.query", "table" to "users") { span ->
+ * val user = tracer.tracedSuspend("db.query", TagNames.TABLE to "users") { span ->
  *     val result = userRepository.findByIdSuspend(id)
  *     span.event("query complete")
  *     result
@@ -208,7 +208,7 @@ suspend inline fun <R> Tracer.tracedSuspend(
             Timer.builder(name)
                 .serviceLevelObjectives(*config!!.slos)
                 .tags(*tagArray)
-                .tag("exception", "None")
+                .tag(TagNames.EXCEPTION, "None")
                 .register(config.registry)
         )
         result
@@ -218,7 +218,7 @@ suspend inline fun <R> Tracer.tracedSuspend(
             Timer.builder(name)
                 .serviceLevelObjectives(*config!!.slos)
                 .tags(*tagArray)
-                .tag("exception", e.javaClass.simpleName)
+                .tag(TagNames.EXCEPTION, e.javaClass.simpleName)
                 .register(config.registry)
         )
         throw e
@@ -237,7 +237,7 @@ suspend inline fun <R> Tracer.tracedSuspend(
  * Wraps a synchronous service-to-service request in a new [Span] named
  * `service.request.internal` or `service.request.external` depending on [type].
  *
- * Produces the span tags: `source`, `target`, and optionally `uri`. This mirrors the tag schema
+ * Produces the span tags: [TagNames.SOURCE], [TagNames.TARGET], and optionally [TagNames.URI]. This mirrors the tag schema
  * used by [countRequest] and [timedRequest], making it straightforward to correlate traces with
  * metrics in dashboards.
  *
@@ -307,7 +307,7 @@ inline fun <R> Tracer.tracedRequest(
         val result = block(span)
         sample?.stop(
             requestTimerBuilder("service.request.${type.value}", source, target, uri, config!!.slos)
-                .tag("exception", "None")
+                .tag(TagNames.EXCEPTION, "None")
                 .register(config.registry)
         )
         result
@@ -315,7 +315,7 @@ inline fun <R> Tracer.tracedRequest(
         span.error(e)
         sample?.stop(
             requestTimerBuilder("service.request.${type.value}", source, target, uri, config!!.slos)
-                .tag("exception", e.javaClass.simpleName)
+                .tag(TagNames.EXCEPTION, e.javaClass.simpleName)
                 .register(config.registry)
         )
         throw e
@@ -368,7 +368,7 @@ suspend inline fun <R> Tracer.tracedRequestSuspend(
         val result = block(span)
         sample?.stop(
             requestTimerBuilder("service.request.${type.value}", source, target, uri, config!!.slos)
-                .tag("exception", "None")
+                .tag(TagNames.EXCEPTION, "None")
                 .register(config.registry)
         )
         result
@@ -376,7 +376,7 @@ suspend inline fun <R> Tracer.tracedRequestSuspend(
         span.error(e)
         sample?.stop(
             requestTimerBuilder("service.request.${type.value}", source, target, uri, config!!.slos)
-                .tag("exception", e.javaClass.simpleName)
+                .tag(TagNames.EXCEPTION, e.javaClass.simpleName)
                 .register(config.registry)
         )
         throw e
@@ -439,6 +439,6 @@ internal fun Tracer.requestSpan(
     uri: String?,
 ): Span = nextSpan()
     .name("service.request.${type.value}")
-    .tag("source", source)
-    .tag("target", target)
-    .apply { if (uri != null) tag("uri", uri) }
+    .tag(TagNames.SOURCE, source)
+    .tag(TagNames.TARGET, target)
+    .apply { if (uri != null) tag(TagNames.URI, uri) }
