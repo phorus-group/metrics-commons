@@ -469,11 +469,15 @@ fun getOrder(@PathVariable id: String): Order {
 
 In the trace backend, this produces a tree like:
 
-```
-HTTP GET /orders/{id}              ← root span (created by Spring)
-  ├─ db.query                      ← child span (traced)
-  └─ service.request.internal      ← child span (tracedRequest)
-       └─ HTTP GET inventory-svc   ← grandchild span (created by the WebClient bridge)
+```mermaid
+flowchart TD
+    A["HTTP GET /orders/{id}<br/>(root span, created by Spring)"]
+    B["db.query<br/>(child span, traced)"]
+    C["service.request.internal<br/>(child span, tracedRequest)"]
+    D["HTTP GET inventory-svc<br/>(grandchild span, WebClient bridge)"]
+    A --> B
+    A --> C
+    C --> D
 ```
 
 Each span records its own duration, so you can see exactly how much time was spent on the database query
