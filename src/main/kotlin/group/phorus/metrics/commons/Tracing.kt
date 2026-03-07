@@ -2,7 +2,7 @@
  * Tracing extension functions for [Tracer][io.micrometer.tracing.Tracer] and
  * [Span][io.micrometer.tracing.Span].
  *
- * These functions wrap the verbose `nextSpan()` → `start()` → `try/finally` → `end()` pattern
+ * These functions wrap the verbose `nextSpan()` -> `start()` -> `try/finally` -> `end()` pattern
  * into single higher-order function calls. On failure, the span is tagged with the exception via
  * [Span.error][io.micrometer.tracing.Span.error] before re-throwing, ensuring the trace backend
  * captures the error context.

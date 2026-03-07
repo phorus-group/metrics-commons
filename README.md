@@ -598,10 +598,10 @@ for direct use.
 
 | Function | What it does | Example |
 |----------|-------------|---------|
-| `tagValue(value)` | Trims whitespace, replaces null/blank with `"None"` | `tagValue(null)` → `"None"` |
-| `statusFamily(statusCode)` | Groups HTTP codes into families | `statusFamily(404)` → `"4xx"` |
-| `exceptionTag(throwable)` | Extracts simple class name | `exceptionTag(e)` → `"TimeoutException"` |
-| `boundedTag(value, allowed)` | Restricts to an allowlist | `boundedTag("PATCH", setOf("GET", "POST"))` → `"other"` |
+| `tagValue(value)` | Trims whitespace, replaces null/blank with `"None"` | `tagValue(null)` -> `"None"` |
+| `statusFamily(statusCode)` | Groups HTTP codes into families | `statusFamily(404)` -> `"4xx"` |
+| `exceptionTag(throwable)` | Extracts simple class name | `exceptionTag(e)` -> `"TimeoutException"` |
+| `boundedTag(value, allowed)` | Restricts to an allowlist | `boundedTag("PATCH", setOf("GET", "POST"))` -> `"other"` |
 
 For span tags, use the `Span` extension equivalents: `span.tagSafe(key, value)` and
 `span.tagBounded(key, value, allowed)`.
