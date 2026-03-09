@@ -257,6 +257,20 @@ suspend inline fun <R> Tracer.tracedSuspend(
  * }
  * ```
  *
+ * ### Wrapping WebClient calls
+ *
+ * When wrapping a `WebClient` call (or `RestTemplate`), this function creates a **parent span**,
+ * and the HTTP client's automatic instrumentation (provided by the tracing bridge) creates a
+ * **child span** underneath it. This produces **nested spans**:
+ *
+ * ```
+ * service.request.external (your tracedRequest span, with business tags)
+ * └── HTTP POST payment-api (WebClient's automatic span, with HTTP details)
+ * ```
+ *
+ * The parent span captures business-level context (source/target/uri tags, correlated metrics),
+ * while the child span captures technical HTTP details (method, status, headers).
+ *
  * Optionally, pass a [MeterRegistry] and a [metrics] configuration block to also record
  * metrics for the same request without nesting:
  *
@@ -332,6 +346,10 @@ inline fun <R> Tracer.tracedRequest(
  * Suspend variant of [tracedRequest]. Wraps a suspending service-to-service request in a new [Span].
  *
  * Does **not** set a ThreadLocal scope. The [Span] is passed explicitly to the [block].
+ *
+ * When wrapping a `WebClient` call, this creates a parent span with business-level tags, and
+ * WebClient's automatic instrumentation creates a child span with HTTP details. See [tracedRequest]
+ * for the full explanation of nested span behavior.
  *
  * @see tracedRequest for full documentation.
  * @see tracedSuspend for why ThreadLocal scope is not used and how to handle child spans.

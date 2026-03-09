@@ -30,6 +30,7 @@ they reach production.
 - [Getting started](#getting-started)
   - [Installation](#installation)
   - [Tracing bridge setup](#tracing-bridge-setup)
+  - [Quick start](#quick-start)
 - [Standard metric names](#standard-metric-names)
 - [Standard tag names](#standard-tag-names)
 - [Metrics API](#metrics-api)
@@ -198,6 +199,67 @@ implementation("io.zipkin.reporter2:zipkin-reporter-brave")
 
 If no bridge is on the classpath, the `Tracer` returns no-op spans. All tracing functions still execute
 their blocks normally, with zero overhead.
+
+### Quick start
+
+Some of the simplest possible usages are counting events, timing operations, and tracing service calls.
+All functions are extension functions on `MeterRegistry` or `Tracer`, which Spring Boot autoconfigures
+and makes available for injection.
+
+**1. Inject the registry and tracer:**
+
+```kotlin
+@Service
+class OrderService(
+    private val registry: MeterRegistry,
+    private val tracer: Tracer,
+    private val orderRepository: OrderRepository,
+    private val paymentClient: PaymentClient,
+)
+```
+
+**2. Count events and time operations:**
+
+```kotlin
+suspend fun placeOrder(order: Order): OrderConfirmation {
+    // Count that an order was placed
+    registry.count("app.orders.placed", "region" to "eu")
+
+    // Time the database save
+    val saved = registry.timedSuspend("db.query", "table" to "orders") {
+        orderRepository.save(order)
+    }
+
+    return OrderConfirmation(saved.id)
+}
+```
+
+**3. Trace a service-to-service call with metrics in a single call:**
+
+```kotlin
+suspend fun chargeOrder(order: Order): PaymentResult {
+    return tracer.tracedRequestSuspend(
+        source = "order-service",
+        target = "payment-api",
+        type = RequestType.EXTERNAL,
+        uri = "/v1/charges",
+        registry = registry,  // records a timer + counter automatically
+    ) {
+        paymentClient.charge(order)
+    }
+}
+```
+
+**4. What you get:**
+
+- **Metrics**: `app.orders.placed` counter, `db.query` timer with `table=orders` tag,
+  `service.request.external` timer and counter with `source`/`target`/`uri` tags
+- **Traces**: A span named `service.request.external` with the same tags, nested under
+  Spring's root HTTP span
+- **Tag safety**: All tag values are automatically sanitized
+
+From here, explore the [Metrics API](#metrics-api) and [Tracing API](#tracing-api) sections below
+for the full set of functions.
 
 ***
 
@@ -581,7 +643,17 @@ val response = tracer.tracedRequest(
 }
 ```
 
-This is optional. The bridge handles propagation either way; `tracedRequest` just adds a named span for observability.
+This creates **nested spans**. The `tracedRequest` span becomes the parent, and
+`WebClient`'s automatic instrumentation creates a child span underneath it. The hierarchy looks like:
+
+```
+service.request.internal (your tracedRequest span, with business tags)
+└── HTTP GET inventory-service (WebClient's automatic span, with HTTP details)
+```
+
+This is optional. The bridge handles propagation either way. Wrapping with `tracedRequest` adds
+business-level observability (source/target tags, correlated metrics) while WebClient's automatic
+span captures the technical HTTP details (method, status, headers).
 
 For Kafka, Spring Kafka supports the same header injection and extraction, but it is **not enabled by
 default**. You must set `observationEnabled = true` on the `KafkaTemplate` (producer side) and on
