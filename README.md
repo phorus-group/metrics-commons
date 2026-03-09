@@ -21,7 +21,7 @@ they reach production.
 
 ## Table of contents
 
-- [Background: why monitoring matters](#background-why-monitoring-matters)
+- [Why monitoring matters](#why-monitoring-matters)
   - [Metrics](#metrics)
   - [Distributed tracing](#distributed-tracing)
   - [How they work together](#how-they-work-together)
@@ -52,7 +52,7 @@ they reach production.
 
 ***
 
-## Background: why monitoring matters
+## Why monitoring matters
 
 If you are already familiar with metrics and distributed tracing, feel free to skip to [Features](#features).
 
