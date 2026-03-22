@@ -2,6 +2,7 @@
 
 [![GitHub license](https://img.shields.io/badge/license-Apache%20License%202.0-blue.svg?style=flat)](https://www.apache.org/licenses/LICENSE-2.0)
 [![Maven Central](https://img.shields.io/maven-central/v/group.phorus/metrics-commons)](https://mvnrepository.com/artifact/group.phorus/metrics-commons)
+[![codecov](https://codecov.io/gh/phorus-group/metrics-commons/branch/main/graph/badge.svg)](https://codecov.io/gh/phorus-group/metrics-commons)
 
 Kotlin extension functions for [Micrometer](https://micrometer.io/) that make metrics and distributed tracing
 comfortable to use in backend services. The library wraps the verbose builder/register/record pattern into
