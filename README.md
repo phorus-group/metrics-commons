@@ -808,4 +808,4 @@ See [Contributing Guidelines](CONTRIBUTING.md).
 
 ## Authors and acknowledgment
 
-- [Martin Ivan Rios](https://linkedin.com/in/ivr2132)
+Developed and maintained by the [Phorus Group](https://phorus.group) team.
