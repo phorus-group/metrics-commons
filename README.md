@@ -198,7 +198,7 @@ implementation("io.zipkin.reporter2:zipkin-reporter-brave")
 </details>
 
 If no bridge is on the classpath, the `Tracer` returns no-op spans. All tracing functions still execute
-their blocks normally, with zero overhead.
+their blocks normally.
 
 ### Quick start
 

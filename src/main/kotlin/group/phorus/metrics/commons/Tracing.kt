@@ -19,7 +19,7 @@
  *   plus a reporter such as `io.zipkin.reporter2:zipkin-reporter-brave`.
  *
  * If no bridge is on the classpath, the [Tracer] returns no-op spans and all helper functions
- * still execute their blocks normally, with zero overhead.
+ * still execute their blocks normally.
  *
  * ### Synchronous vs. suspend variants
  *
