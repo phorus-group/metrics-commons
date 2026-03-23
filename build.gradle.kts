@@ -148,6 +148,22 @@ afterEvaluate {
     }
 }
 
+afterEvaluate {
+    tasks.named<JacocoReport>("jacocoTestReport") {
+        classDirectories.setFrom(files(classDirectories.files.map {
+            fileTree(it) {
+                exclude(
+                    "**/model/**",
+                    "**/dtos/**",
+                    "**/config/**",
+                    "**/repositories/**",
+                    "**/*Application*",
+                )
+            }
+        }))
+    }
+}
+
 mavenPublishing {
     coordinates(
         groupId = project.group.toString(),
