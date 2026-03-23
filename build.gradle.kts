@@ -58,19 +58,17 @@ tasks {
     jacocoTestReport {
         executionData.setFrom(fileTree(project.layout.buildDirectory).include("/jacoco/*.exec"))
 
-        afterEvaluate {
-            classDirectories.setFrom(files(classDirectories.files.map {
-                fileTree(it) {
-                    exclude(
-                        "**/model/**",
-                        "**/dtos/**",
-                        "**/config/**",
-                        "**/repositories/**",
-                        "**/*Application*",
-                    )
-                }
-            }))
-        }
+        classDirectories.setFrom(
+            sourceSets.main.get().output.classesDirs.map { dir ->
+                fileTree(dir).exclude(
+                    "**/model/**",
+                    "**/dtos/**",
+                    "**/config/**",
+                    "**/repositories/**",
+                    "**/*Application*",
+                )
+            }
+        )
 
         reports {
             xml.required.set(true)
@@ -148,21 +146,6 @@ afterEvaluate {
     }
 }
 
-afterEvaluate {
-    tasks.named<JacocoReport>("jacocoTestReport") {
-        classDirectories.setFrom(files(classDirectories.files.map {
-            fileTree(it) {
-                exclude(
-                    "**/model/**",
-                    "**/dtos/**",
-                    "**/config/**",
-                    "**/repositories/**",
-                    "**/*Application*",
-                )
-            }
-        }))
-    }
-}
 
 mavenPublishing {
     coordinates(
