@@ -41,7 +41,7 @@ dependencies {
     testImplementation("io.micrometer:micrometer-tracing-test:1.5.9")
 }
 
-configurations.matching { it.name.startsWith("dokka") }.configureEach {
+configurations.configureEach {
     resolutionStrategy.eachDependency {
         if (requested.group.startsWith("com.fasterxml.jackson")) {
             useVersion("2.18.6")
@@ -57,6 +57,20 @@ tasks {
     // Jacoco config
     jacocoTestReport {
         executionData.setFrom(fileTree(project.layout.buildDirectory).include("/jacoco/*.exec"))
+
+        afterEvaluate {
+            classDirectories.setFrom(files(classDirectories.files.map {
+                fileTree(it) {
+                    exclude(
+                        "**/model/**",
+                        "**/dtos/**",
+                        "**/config/**",
+                        "**/repositories/**",
+                        "**/*Application*",
+                    )
+                }
+            }))
+        }
 
         reports {
             xml.required.set(true)
