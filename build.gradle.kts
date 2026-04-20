@@ -14,7 +14,7 @@ plugins {
 
 group = "group.phorus"
 description = "Library with common functions for recording metrics."
-version = "2.0.3"
+version = "2.0.4"
 
 java {
     sourceCompatibility = JavaVersion.VERSION_17
