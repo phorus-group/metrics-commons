@@ -1,0 +1,3 @@
+# CVE-2026-54515 affects jackson-databind. The fix requires 2.18.9 which has not been
+# released to Maven Central yet. Remove this entry once 2.18.9 is available.
+CVE-2026-54515
