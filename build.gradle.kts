@@ -28,7 +28,7 @@ repositories {
 
 configurations.all {
     resolutionStrategy {
-        force("com.fasterxml.jackson.core:jackson-core:2.21.1")
+        force("com.fasterxml.jackson.core:jackson-core:2.18.9")
         force("org.bouncycastle:bcpg-jdk18on:1.84")
         force("org.bouncycastle:bcpkix-jdk18on:1.84")
         force("org.bouncycastle:bcprov-jdk18on:1.84")
