@@ -33,11 +33,12 @@ configurations.all {
         force("org.bouncycastle:bcpkix-jdk18on:1.84")
         force("org.bouncycastle:bcprov-jdk18on:1.84")
         force("org.bouncycastle:bcutil-jdk18on:1.84")
+        force("org.jsoup:jsoup:1.23.1")
     }
 }
 
 dependencies {
-    api("io.micrometer:micrometer-registry-prometheus:1.15.0")
+    api("io.micrometer:micrometer-registry-prometheus:1.15.12")
     api("io.micrometer:micrometer-tracing:1.5.9")
 
     testImplementation(kotlin("test"))
