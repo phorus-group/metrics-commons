@@ -28,7 +28,7 @@ repositories {
 
 configurations.all {
     resolutionStrategy {
-        force("com.fasterxml.jackson.core:jackson-core:2.18.9")
+        force("com.fasterxml.jackson.core:jackson-core:2.18.10")
         force("org.bouncycastle:bcpg-jdk18on:1.85")
         force("org.bouncycastle:bcpkix-jdk18on:1.85")
         force("org.bouncycastle:bcprov-jdk18on:1.85")
@@ -50,7 +50,7 @@ dependencies {
 configurations.configureEach {
     resolutionStrategy.eachDependency {
         if (requested.group.startsWith("com.fasterxml.jackson")) {
-            useVersion("2.18.9")
+            useVersion("2.18.10")
         }
     }
 }
