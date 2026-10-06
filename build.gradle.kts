@@ -33,7 +33,7 @@ configurations.all {
         force("org.bouncycastle:bcpkix-jdk18on:1.85")
         force("org.bouncycastle:bcprov-jdk18on:1.85")
         force("org.bouncycastle:bcutil-jdk18on:1.85")
-        force("org.jsoup:jsoup:1.23.1")
+        force("org.jsoup:jsoup:1.23.2")
         force("org.freemarker:freemarker:2.3.35")
     }
 }
